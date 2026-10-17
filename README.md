@@ -30,7 +30,8 @@ Five magma crawlers spawn after the initial 60-second countdown. Later waves hav
 
 ```bash
 npm run typecheck
-npm test
+npm run test:game
+# npm test additionally runs Grok platform fixture tests that need .grok/ sandbox files
 node --experimental-strip-types --test src/game/world/sim.test.ts src/game/maps/earth-core.test.ts src/game/paths/paths.test.ts src/game/state/simulation.test.ts
 ```
 
