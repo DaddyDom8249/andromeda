@@ -11,7 +11,6 @@ export function Hud() {
   const countdown = useHud((state) => state.countdown);
   const credits = useHud((state) => state.credits);
   const notice = useHud((state) => state.notice);
-  const leaked = useHud((state) => state.leaked);
   const alive = useHud((state) => state.alive);
   const seconds = Math.max(0, Math.ceil(countdown));
   const duration = wave === 1 ? RULES.countdownSeconds : 15;
