@@ -16,3 +16,13 @@
 - **CodeRabbit:** GitHub review connector does not expose a direct CodeRabbit review action; no automated review result is claimed.
 - **Production:** no deployment, database changes, or browser verification performed.
 - **Next:** inspect GitHub Actions run conclusions on the PR HEAD and repair any concrete failure before merge or deploy.
+
+## 2026-10-17 — Earth Core gameplay continuity and rewards
+
+- **User reproduction:** first wave stops forever; visible crystals do not react to taps/clicks; killed crawlers produce no resources.
+- **Root causes on main `f7935a34`:** only wave 1 authored; `stepMatch` unconditionally marks the state `resolved` after clearing that plan; scenery crystals render without an onClick or reward; dead enemies are deleted without awarding score or loot.
+- **Implemented on `fix/andromeda-gameplay-progression-loot`:** five escalating waves with 12-second inter-wave countdown, skip-wave action, explicit victory/defeat and restart; collectible map crystals and accessible HUD harvest; killed enemies spawn click-to-claim loot orbs, score and HUD collection fallback. All pickups are once-only, and the build currency remains spendable on spires.
+- **Scope:** implements progression *within the Earth's Core* only. Additional planetary/galactic levels have not been built.
+- **Test coverage:** new simulation regressions for progression through all waves, collectible crystals, single payout per kill/drop, and defeat; existing one-wave leakage regression updated to assert advancement to wave 2.
+- **Verification:** GitHub Actions CI, Vercel build/preview, and browser interaction are tracked by their exact head and results; no successful test or deployment is claimed here until evidence is checked.
+- **Production:** main and original production remain unchanged pending reviewed gameplay verification. Do not merge until checks pass.
