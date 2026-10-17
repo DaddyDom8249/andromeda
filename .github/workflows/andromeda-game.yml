@@ -1,0 +1,40 @@
+name: Andromeda gameplay CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Dedicated gameplay regression tests
+        run: npm run test:game
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium for browser QA
+        run: npx playwright install --with-deps chromium
+      - name: Serve production build
+        run: npm run preview:restart
+      - name: Desktop and mobile browser smoke
+        run: node scripts/game-browser-smoke.mjs
+      - name: Upload gameplay screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: andromeda-browser-screenshots
+          path: screenshots/
+          if-no-files-found: ignore

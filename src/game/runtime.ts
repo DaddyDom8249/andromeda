@@ -102,10 +102,20 @@ export function publish(state: MatchState = ensureMatch()): void {
 
 export function tryPlace(pad: number): boolean {
   const state = ensureMatch();
-  const notice = placeSpire(state, pad);
+  const notice =
+    state.phase === "victory" || state.phase === "defeat"
+      ? "Restart to build a new match."
+      : placeSpire(state, pad);
   publish(state);
   useHud.setState({ notice });
   return notice === "";
+}
+
+/** Reset both simulation and visible HUD. Camera remains under user control. */
+export function restartMatch(): void {
+  match = createMatch();
+  useHud.setState({ notice: "" });
+  publish(match);
 }
 
 export function getEnemies(): readonly EnemyRuntime[] {

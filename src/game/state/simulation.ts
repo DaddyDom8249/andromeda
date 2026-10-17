@@ -1,7 +1,7 @@
 import { getEnemyType } from "../enemies/registry.ts";
 import { getMap } from "../maps/registry.ts";
 import { buildMapPath } from "../paths/resolve.ts";
-import { planForWave } from "../spawning/waves.ts";
+import { FINAL_EARTH_CORE_WAVE, planForWave } from "../spawning/waves.ts";
 import { RULES } from "../theme.ts";
 import { applySpires, SPIRE } from "../towers/spire.ts";
 import type { MatchState } from "./types.ts";
@@ -36,7 +36,7 @@ export function createMatch(mapId: string = RULES.mapId): MatchState {
  * Spires damage enemies in range; a kill does not leak.
  */
 export function stepMatch(state: MatchState, dt: number): void {
-  if (!(dt > 0) || state.phase === "resolved") return;
+  if (!(dt > 0) || state.phase === "victory" || state.phase === "defeat") return;
 
   if (state.phase === "countdown") {
     state.countdown -= dt;
@@ -65,22 +65,30 @@ export function stepMatch(state: MatchState, dt: number): void {
     surviving.push(enemy);
   }
   if (leakedNow > 0) {
-    state.lives -= leakedNow;
+    state.lives = Math.max(0, state.lives - leakedNow);
     state.leaked += leakedNow;
   }
   state.enemies = surviving;
+
+  // A lethal breach ends the match immediately. No subsequent wave can spawn.
+  if (state.lives === 0) {
+    state.phase = "defeat";
+    state.enemies = [];
+    return;
+  }
 
   if (state.spawnIndex < state.plan.length) {
     state.spawnTimer -= dt;
     while (state.spawnIndex < state.plan.length && state.spawnTimer <= 0) {
       const step = state.plan[state.spawnIndex]!;
       const def = getEnemyType(step.typeId);
+      const maxHealth = Math.round(def.maxHealth * (1 + (state.wave - 1) * 0.25));
       state.enemies.push({
         id: state.nextId++,
         typeId: def.id,
-        health: def.maxHealth,
-        maxHealth: def.maxHealth,
-        speed: def.speed,
+        health: maxHealth,
+        maxHealth,
+        speed: def.speed * (1 + (state.wave - 1) * 0.08),
         distance: 0,
       });
       state.spawnIndex += 1;
@@ -89,6 +97,16 @@ export function stepMatch(state: MatchState, dt: number): void {
   }
 
   if (state.spawnIndex >= state.plan.length && state.enemies.length === 0) {
-    state.phase = "resolved";
+    if (state.wave >= FINAL_EARTH_CORE_WAVE) {
+      state.phase = "victory";
+    } else {
+      // Preserve towers, cores and lives; reset only wave-local state.
+      state.wave += 1;
+      state.plan = planForWave(state.wave);
+      state.spawnIndex = 0;
+      state.spawnTimer = 0;
+      state.countdown = 15;
+      state.phase = "countdown";
+    }
   }
 }
