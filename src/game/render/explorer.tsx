@@ -58,7 +58,7 @@ export function ChaseCamera() {
     camera.position.lerp(desired.current, blend);
     look.current.set(player.x, GROUND_Y + 1.15, player.z);
     camera.lookAt(look.current);
-  }, 20);
+  });
   return null;
 }
 

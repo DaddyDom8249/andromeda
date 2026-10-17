@@ -4,11 +4,11 @@ World Foundation. A third-person walk across the crust of Earth's molten core. G
 
 ## See it run
 
-Recorded from the live game: the start card, a walk across the crust, and two crystals picked up on contact.
+Recorded from the live game: the start card, a walk across the crust, and a crystal picked up on contact.
 
 ![Andromeda running on the crust](docs/gameplay.gif)
 
-Full clip: [docs/gameplay.mp4](docs/gameplay.mp4) (13 seconds, 1280×720).
+Full clip: [docs/gameplay.mp4](docs/gameplay.mp4) (19 seconds, 1280×720).
 
 ## Play
 
