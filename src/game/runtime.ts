@@ -92,8 +92,12 @@ export function publish(state: MatchState = ensureMatch()): void {
   const sameDrops =
     curr.dropIds.length === dropIds.length &&
     curr.dropIds.every((id, index) => id === dropIds[index]);
+  const crystals = state.collectedCrystals;
+  const sameCrystals =
+    curr.crystalIds.length === crystals.length &&
+    curr.crystalIds.every((id, index) => id === crystals[index]);
   const remainingCrystals = getMap(state.mapId).props.filter((prop, index) =>
-    prop.kind === "crystal" && !state.collectedCrystals.includes(index),
+    prop.kind === "crystal" && !crystals.includes(index),
   ).length;
   if (
     Math.abs(curr.countdown - state.countdown) < 0.04 &&
@@ -109,6 +113,7 @@ export function publish(state: MatchState = ensureMatch()): void {
     curr.score === state.score &&
     curr.credits === state.credits &&
     curr.crystalsRemaining === remainingCrystals &&
+    sameCrystals &&
     sameDrops &&
     sameRoster &&
     sameBuilt
@@ -132,6 +137,7 @@ export function publish(state: MatchState = ensureMatch()): void {
     built: builtPads,
     dropIds: sameDrops ? curr.dropIds : dropIds,
     crystalsRemaining: remainingCrystals,
+    crystalIds: sameCrystals ? curr.crystalIds : [...crystals],
   });
 }
 
