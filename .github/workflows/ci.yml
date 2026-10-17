@@ -1,0 +1,40 @@
+name: Andromeda CI
+on:
+  push:
+    branches:
+      - main
+      - repair/game-test-coverage-20261017
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ""
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: All regression tests
+        run: npm test
+      - name: TypeScript checks
+        run: npm run typecheck
+      - name: ESLint
+        run: npm run lint
+      - name: Production build (without a database connection)
+        run: npm run build
