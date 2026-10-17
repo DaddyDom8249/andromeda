@@ -25,3 +25,16 @@ jobs:
         run: npm run test:game
       - name: Production build
         run: npm run build
+      - name: Install Chromium for browser QA
+        run: npx playwright install --with-deps chromium
+      - name: Serve production build
+        run: npm run preview:restart
+      - name: Desktop and mobile browser smoke
+        run: node scripts/game-browser-smoke.mjs
+      - name: Upload gameplay screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: andromeda-browser-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
