@@ -30,8 +30,11 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
-      - name: All regression tests
-        run: npm test
+      # The script-only suite relies on .grok/ sandbox assets absent from GitHub.
+      # Run every portable source-level regression here; keep Grok-specific
+      # script tests in npm test for their native environment.
+      - name: Portable source and gameplay regressions
+        run: npm run test:source
       - name: TypeScript checks
         run: npm run typecheck
       - name: ESLint
