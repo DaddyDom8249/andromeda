@@ -21,10 +21,15 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). The 60-second countdown sta
 | Zoom | Pinch | Scroll |
 | Pan | Two-finger drag | Right-drag |
 | Build | Tap a gold ring | Click a gold ring |
+| Gather crystals | Tap a glowing crystal or Crystal button | Click crystal or Crystal button |
+| Claim defeated-enemy loot | Tap a glowing orb or Collect loot | Click orb or Collect loot |
+| Skip countdown | Start wave now | Start wave now |
 
 You start with 20 lives, wave 1, and 120 cores. An Ember Spire costs 40 cores. It fires at the crawler furthest along the lane while that crawler is in range. A kill does not cost a life. A crawler that reaches the exit costs exactly one life.
 
-Five magma crawlers spawn after the countdown. Place spires during the countdown if you want them ready.
+Five magma crawlers spawn in wave 1. The Earth's Core stage has five escalating waves, with a 12-second build break between waves. Use **Start wave now** to skip a countdown. Survive all five waves to win; losing all lives ends the stage. The **Restart stage** button starts a fresh run.
+
+Tap the glowing **crystals** in the 3D world (or use the **Crystal** HUD button) to earn 25 cores and 50 score each. Defeated enemies award 10 score and drop a glowing loot orb worth 10 cores. Tap an orb, or use **Collect loot**, to claim the cores. Loot and crystals can only be claimed once. Earned cores can be spent on more Ember Spires.
 
 ## Checks
 
