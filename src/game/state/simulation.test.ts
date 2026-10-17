@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { distanceToPathXZ, samplePoly } from "../paths/sample.ts";
 import { RULES } from "../theme.ts";
+import { FINAL_EARTH_CORE_WAVE, listWaves } from "../spawning/waves.ts";
 import { buildPads, placeSpire, SPIRE } from "../towers/spire.ts";
 import { createMatch, stepMatch } from "./simulation.ts";
 import type { MatchState } from "./types.ts";
@@ -87,7 +88,7 @@ describe("earth core match", () => {
     let previousLives = state.lives;
     let previousLeaks = 0;
     let guard = 0;
-    while (state.phase !== "resolved" && guard < 20000) {
+    while (state.wave === 1 && guard < 20000) {
       stepMatch(state, 1 / 60);
       assertOnLane(state);
       if (state.leaked !== previousLeaks) {
@@ -97,7 +98,9 @@ describe("earth core match", () => {
       }
       guard += 1;
     }
-    assert.equal(state.phase, "resolved");
+    assert.equal(state.wave, 2);
+    assert.equal(state.phase, "countdown");
+    assert.equal(state.countdown, 15);
     assert.equal(state.leaked, 5);
     assert.equal(state.lives, 15);
     assert.equal(state.leakLog.length, 5);
@@ -127,5 +130,101 @@ describe("earth core match", () => {
     assert.equal(state.enemies.some((crawler) => crawler.id === enemy.id), false);
     assert.equal(state.lives, lives);
     assert.equal(state.leakLog.includes(enemy.id), false);
+  });
+});
+
+/** Defeat all currently spawned crawlers while retaining authentic spawn/countdown timing. */
+function clearWave(state: MatchState): void {
+  let guard = 0;
+  const currentWave = state.wave;
+  while (state.wave === currentWave && state.phase !== "victory" && state.phase !== "defeat") {
+    for (const enemy of state.enemies) enemy.health = 0;
+    stepMatch(state, 0.1);
+    assert.ok(++guard < 4000, `wave ${currentWave} did not finish`);
+  }
+}
+
+describe("five-wave progression and end states", () => {
+  it("defines five increasingly populated enemy waves", () => {
+    const waves = listWaves();
+    assert.equal(waves.length, FINAL_EARTH_CORE_WAVE);
+    const counts = waves.map((wave) => wave.spawns.reduce((n, g) => n + g.count, 0));
+    assert.deepEqual(counts, [5, 7, 9, 12, 15]);
+  });
+
+  it("preserves towers, cores and lives through a 15-second intermission", () => {
+    const state = createMatch();
+    assert.equal(placeSpire(state, 0), "");
+    const tower = state.towers[0];
+    const credits = state.credits;
+    clearWave(state);
+    assert.equal(state.wave, 2);
+    assert.equal(state.phase, "countdown");
+    assert.equal(state.countdown, 15);
+    assert.equal(state.spawnIndex, 0);
+    assert.equal(state.enemies.length, 0);
+    assert.equal(state.towers[0], tower);
+    assert.equal(state.credits, credits);
+    assert.equal(state.lives, RULES.startingLives);
+    advance(state, 14.9);
+    assert.equal(state.phase, "countdown");
+    advance(state, 0.2);
+    assert.equal(state.phase, "active");
+    assert.equal(state.spawnIndex, 1);
+    assert.equal(state.enemies[0]?.maxHealth, 125);
+    assert.ok((state.enemies[0]?.speed ?? 0) > 5.2);
+  });
+
+  it("completes wave 5 in victory without changing a completed match", () => {
+    const state = createMatch();
+    for (let n = 1; n <= FINAL_EARTH_CORE_WAVE; n++) {
+      assert.equal(state.wave, n);
+      clearWave(state);
+      if (n < FINAL_EARTH_CORE_WAVE) {
+        assert.equal(state.wave, n + 1);
+        assert.equal(state.phase, "countdown");
+      }
+    }
+    assert.equal(state.phase, "victory");
+    assert.equal(state.lives, RULES.startingLives);
+    assert.equal(state.towers.length, 0);
+    const snapshot = structuredClone({
+      wave: state.wave, phase: state.phase, lives: state.lives,
+      spawnIndex: state.spawnIndex, leaked: state.leaked, countdown: state.countdown,
+    });
+    advance(state, 120);
+    assert.deepEqual({
+      wave: state.wave, phase: state.phase, lives: state.lives,
+      spawnIndex: state.spawnIndex, leaked: state.leaked, countdown: state.countdown,
+    }, snapshot);
+  });
+
+  it("stops spawning after a lethal breach and never makes lives negative", () => {
+    const state = createMatch();
+    state.lives = 1;
+    advance(state, 110);
+    assert.equal(state.phase, "defeat");
+    assert.equal(state.lives, 0);
+    assert.equal(state.leaked, 1);
+    const spawned = state.spawnIndex;
+    advance(state, 100);
+    assert.equal(state.phase, "defeat");
+    assert.equal(state.spawnIndex, spawned);
+    assert.equal(state.lives, 0);
+  });
+
+  it("a fresh match fully resets progress, currency, and placements", () => {
+    const completed = createMatch();
+    placeSpire(completed, 0);
+    clearWave(completed);
+    const fresh = createMatch();
+    assert.equal(fresh.wave, 1);
+    assert.equal(fresh.lives, RULES.startingLives);
+    assert.equal(fresh.credits, SPIRE.startingCores);
+    assert.equal(fresh.phase, "countdown");
+    assert.equal(fresh.countdown, 60);
+    assert.equal(fresh.towers.length, 0);
+    assert.equal(fresh.enemies.length, 0);
+    assert.equal(fresh.leaked, 0);
   });
 });
