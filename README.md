@@ -1,6 +1,6 @@
 # Andromeda
 
-World Foundation. A 3D tower defense on the crust of Earth's molten core. Magma crawlers follow one lane from the spawn portal to the exit. Ember Spires shoot them before they leak.
+Five-wave Earth Core defense. A 3D tower defense on the crust of Earth's molten core. Magma crawlers follow one lane from the spawn portal to the exit. Ember Spires shoot them before they leak.
 
 ## Play
 
@@ -22,9 +22,9 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). The 60-second countdown sta
 | Pan | Two-finger drag | Right-drag |
 | Build | Tap a gold ring | Click a gold ring |
 
-You start with 20 lives, wave 1, and 120 cores. An Ember Spire costs 40 cores. It fires at the crawler furthest along the lane while that crawler is in range. A kill does not cost a life. A crawler that reaches the exit costs exactly one life.
+You start with 20 lives, wave 1 of 5, and 120 cores. An Ember Spire costs 40 cores. It fires at the crawler furthest along the lane while that crawler is in range. A kill does not cost a life. A crawler that reaches the exit costs exactly one life.
 
-Five magma crawlers spawn after the countdown. Place spires during the countdown if you want them ready.
+Five magma crawlers spawn after the initial 60-second countdown. Later waves have 7, 9, 12, and 15 increasingly durable, faster crawlers, each preceded by a 15-second building break. Cores and placed spires persist between waves. Survive wave 5 to win, or lose all lives to see Game Over. Both outcomes show a Restart game button.
 
 ## Checks
 
