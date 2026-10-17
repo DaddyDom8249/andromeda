@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { distanceToPathXZ, samplePoly } from "../paths/sample.ts";
 import { RULES } from "../theme.ts";
+import { getMap } from "../maps/registry.ts";
+import { listWaves } from "../spawning/waves.ts";
 import { buildPads, placeSpire, SPIRE } from "../towers/spire.ts";
-import { createMatch, stepMatch } from "./simulation.ts";
+import { collectCrystal, collectDrop, createMatch, REWARD, startWaveNow, stepMatch } from "./simulation.ts";
 import type { MatchState } from "./types.ts";
 
 function advance(state: MatchState, seconds: number, step = 1 / 60) {
@@ -87,7 +89,7 @@ describe("earth core match", () => {
     let previousLives = state.lives;
     let previousLeaks = 0;
     let guard = 0;
-    while (state.phase !== "resolved" && guard < 20000) {
+    while (state.wave === 1 && guard < 20000) {
       stepMatch(state, 1 / 60);
       assertOnLane(state);
       if (state.leaked !== previousLeaks) {
@@ -97,7 +99,9 @@ describe("earth core match", () => {
       }
       guard += 1;
     }
-    assert.equal(state.phase, "resolved");
+    assert.ok(guard < 20000, "first wave must advance");
+    assert.equal(state.phase, "countdown");
+    assert.equal(state.wave, 2);
     assert.equal(state.leaked, 5);
     assert.equal(state.lives, 15);
     assert.equal(state.leakLog.length, 5);
@@ -128,4 +132,77 @@ describe("earth core match", () => {
     assert.equal(state.lives, lives);
     assert.equal(state.leakLog.includes(enemy.id), false);
   });
+  it("advances through all five waves without silently freezing", () => {
+    const state = createMatch();
+    assert.equal(listWaves().length, 5);
+    assert.equal(startWaveNow(state), true);
+    assert.equal(startWaveNow(state), true);
+    let guard = 0;
+    while (state.phase !== "resolved" && guard < 30000) {
+      stepMatch(state, 1 / 30);
+      for (const enemy of state.enemies) enemy.health = 0;
+      guard++;
+    }
+    assert.ok(guard < 30000, "progression did not terminate");
+    assert.equal(state.result, "victory");
+    assert.equal(state.wave, 5);
+    assert.equal(state.kills, 45);
+    assert.equal(state.score, 45 * REWARD.killScore);
+    assert.equal(state.drops.length, 45);
+    assert.equal(state.lives, RULES.startingLives);
+    assert.equal(startWaveNow(state), false, "resolved game cannot start a new wave");
+  });
+
+  it("pays once for harvesting map crystals, never for props or repeats", () => {
+    const state = createMatch();
+    const props = getMap(state.mapId).props;
+    const crystal = props.findIndex((prop) => prop.kind === "crystal");
+    const rock = props.findIndex((prop) => prop.kind === "rock");
+    assert.ok(crystal >= 0);
+    assert.ok(rock >= 0);
+    const initial = state.credits;
+    assert.equal(collectCrystal(state, rock), false);
+    assert.equal(collectCrystal(state, crystal), true);
+    assert.equal(collectCrystal(state, crystal), false);
+    assert.equal(state.credits, initial + REWARD.crystalCores);
+    assert.equal(state.score, REWARD.crystalScore);
+    assert.deepEqual(state.collectedCrystals, [crystal]);
+  });
+
+  it("creates one collectible resource drop per kill and prevents double claims", () => {
+    const state = createMatch();
+    startWaveNow(state);
+    stepMatch(state, 1 / 60);
+    assert.equal(state.enemies.length, 1);
+    const enemyId = state.enemies[0]!.id;
+    state.enemies[0]!.health = 0;
+    stepMatch(state, 1 / 60);
+    assert.equal(state.enemies.some((enemy) => enemy.id === enemyId), false);
+    assert.equal(state.kills, 1);
+    assert.equal(state.score, REWARD.killScore);
+    assert.equal(state.drops.length, 1);
+    const id = state.drops[0]!.id;
+    const oldCores = state.credits;
+    assert.equal(collectDrop(state, id), true);
+    assert.equal(collectDrop(state, id), false);
+    assert.equal(state.credits, oldCores + REWARD.dropCores);
+    assert.equal(state.drops.length, 0);
+    assert.equal(state.leaked, 0);
+  });
+
+  it("ends the stage in defeat at zero lives without spawning more enemies", () => {
+    const state = createMatch();
+    startWaveNow(state);
+    stepMatch(state, 1 / 60);
+    state.lives = 1;
+    state.enemies[0]!.distance = state.path.totalLength - 0.01;
+    stepMatch(state, 1 / 60);
+    assert.equal(state.lives, 0);
+    assert.equal(state.result, "defeat");
+    assert.equal(state.phase, "resolved");
+    const before = state.spawnIndex;
+    stepMatch(state, 10);
+    assert.equal(state.spawnIndex, before);
+  });
+
 });
