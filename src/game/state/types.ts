@@ -1,7 +1,7 @@
 import type { PolyPath } from "../paths/sample.ts";
 import type { SpawnStep } from "../spawning/waves.ts";
 
-export type MatchPhase = "countdown" | "active" | "resolved";
+export type MatchPhase = "countdown" | "active" | "victory" | "defeat";
 
 export interface EnemyRuntime {
   id: number;
