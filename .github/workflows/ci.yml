@@ -40,3 +40,17 @@ jobs:
         run: npm run lint
       - name: Production build (without a database connection)
         run: npm run build
+      - name: Install headless Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start local game
+        run: |
+          npm run dev > /tmp/andromeda-dev.log 2>&1 &
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:8080/ -o /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/andromeda-dev.log
+          exit 1
+      - name: Gameplay browser smoke (desktop and phone)
+        run: node scripts/gameplay-browser-smoke.mjs
+
