@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Component, type ReactNode } from "react";
 import { GameCanvas } from "@/game/render/game-canvas";
 import { Hud } from "@/game/ui/hud";
-import { LookPad, TouchControls } from "@/game/ui/touch-controls";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -13,8 +12,6 @@ function Home() {
         <GameCanvas />
       </CanvasGuard>
       <Hud />
-      <LookPad />
-      <TouchControls />
     </main>
   );
 }

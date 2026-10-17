@@ -1,14 +1,6 @@
 # Andromeda
 
-World Foundation. A third-person walk across the crust of Earth's molten core. Gather crystals, ore, and embers before the vents cook your suit.
-
-## See it run
-
-Recorded from the live game: the start card, a walk across the crust, and a crystal picked up on contact.
-
-![Andromeda running on the crust](docs/gameplay.gif)
-
-Full clip: [docs/gameplay.mp4](docs/gameplay.mp4) (19 seconds, 1280×720).
+World Foundation. A 3D tower defense on the crust of Earth's molten core. Magma crawlers follow one lane from the spawn portal to the exit. Ember Spires shoot them before they leak.
 
 ## Play
 
@@ -19,28 +11,20 @@ npm install
 npm run dev
 ```
 
-Open [http://127.0.0.1:8080](http://127.0.0.1:8080). Tap **Start**, then walk.
-
-Phone and desktop use the same screen. On a phone, keep the browser in portrait and allow motion if the page asks.
+Open [http://127.0.0.1:8080](http://127.0.0.1:8080). The 60-second countdown starts immediately.
 
 ## Controls
 
-| Action | Phone | Desktop | Gamepad |
-| --- | --- | --- | --- |
-| Move | Left joystick | WASD or arrow keys | Left stick |
-| Look | Drag anywhere that is not a button | Drag the view | — |
-| Gather | **Gather** button | E or Space | Face button (button 0) |
-| Retry | **Retry** | **Retry** | — |
+| Action | Phone | Desktop |
+| --- | --- | --- |
+| Look | Drag | Drag |
+| Zoom | Pinch | Scroll |
+| Pan | Two-finger drag | Right-drag |
+| Build | Tap a gold ring | Click a gold ring |
 
-Movement follows the camera. Drag to turn, then push the stick or W to walk that way.
+You start with 20 lives, wave 1, and 120 cores. An Ember Spire costs 40 cores. It fires at the crawler furthest along the lane while that crawler is in range. A kill does not cost a life. A crawler that reaches the exit costs exactly one life.
 
-## Goal
-
-Collect **10** deposits. Walking into the ring at your feet picks one up. **Gather** reaches a little farther if a glow is close but not under you. Height does not matter — only ground distance.
-
-The compass points at the nearest remaining deposit. Crystal, ore, and ember all count the same. Extra deposits stay on the crust after the goal.
-
-Amber vents drain the suit. Standing clear restores it. If the suit hits zero, you respawn on the pad and the deposits you already took stay collected.
+Five magma crawlers spawn after the countdown. Place spires during the countdown if you want them ready.
 
 ## Checks
 
@@ -49,8 +33,6 @@ npm run typecheck
 npm test
 node --experimental-strip-types --test src/game/world/sim.test.ts src/game/maps/earth-core.test.ts src/game/paths/paths.test.ts src/game/state/simulation.test.ts
 ```
-
-`npm test` covers the app shell. The second command covers movement, gather range, the crust layout, and the older path simulation.
 
 ## Build
 

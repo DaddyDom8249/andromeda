@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { planForWave } from "./spawning/waves.ts";
 import { RULES } from "./theme.ts";
+import { SPIRE } from "./towers/spire.ts";
 import type { MatchPhase } from "./state/types.ts";
 
 export interface HudState {
@@ -13,6 +14,9 @@ export interface HudState {
   alive: number;
   leaked: number;
   roster: number[];
+  credits: number;
+  built: number[];
+  notice: string;
 }
 
 export const useHud = create<HudState>(() => ({
@@ -25,4 +29,7 @@ export const useHud = create<HudState>(() => ({
   alive: 0,
   leaked: 0,
   roster: [],
+  credits: SPIRE.startingCores,
+  built: [],
+  notice: "",
 }));

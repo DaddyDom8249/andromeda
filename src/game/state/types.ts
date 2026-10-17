@@ -13,6 +13,15 @@ export interface EnemyRuntime {
   distance: number;
 }
 
+export interface TowerRuntime {
+  id: number;
+  pad: number;
+  x: number;
+  y: number;
+  z: number;
+  cooldown: number;
+}
+
 export interface MatchState {
   mapId: string;
   lives: number;
@@ -28,4 +37,7 @@ export interface MatchState {
   leakLog: number[];
   path: PolyPath;
   routeIds: string[];
+  credits: number;
+  towers: TowerRuntime[];
+  nextTowerId: number;
 }

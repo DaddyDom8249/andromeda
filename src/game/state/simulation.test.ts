@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { distanceToPathXZ, samplePoly } from "../paths/sample.ts";
 import { RULES } from "../theme.ts";
+import { buildPads, placeSpire, SPIRE } from "../towers/spire.ts";
 import { createMatch, stepMatch } from "./simulation.ts";
 import type { MatchState } from "./types.ts";
 
@@ -102,5 +103,29 @@ describe("earth core match", () => {
     assert.equal(state.leakLog.length, 5);
     assert.equal(new Set(state.leakLog).size, 5);
     assert.equal(state.enemies.length, 0);
+  });
+
+  it("spends cores to raise a spire that kills a crawler without leaking", () => {
+    const state = createMatch();
+    const pads = buildPads(state.path);
+    assert.ok(pads.length >= 4);
+    assert.equal(placeSpire(state, 0), "");
+    assert.equal(state.credits, SPIRE.startingCores - SPIRE.cost);
+    assert.match(placeSpire(state, 0), /already/);
+    advance(state, 60);
+    const enemy = state.enemies[0]!;
+    const ahead = samplePoly(state.path, enemy.distance + 2);
+    state.towers[0] = {
+      ...state.towers[0]!,
+      x: ahead.position[0],
+      y: ahead.position[1],
+      z: ahead.position[2],
+      cooldown: 0,
+    };
+    const lives = state.lives;
+    advance(state, 2.2);
+    assert.equal(state.enemies.some((crawler) => crawler.id === enemy.id), false);
+    assert.equal(state.lives, lives);
+    assert.equal(state.leakLog.includes(enemy.id), false);
   });
 });

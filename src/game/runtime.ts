@@ -3,6 +3,7 @@ import { useHud } from "./hud-store.ts";
 import { createMatch, stepMatch } from "./state/simulation.ts";
 import type { EnemyRuntime, MatchPhase, MatchState } from "./state/types.ts";
 import type { PolyPath } from "./paths/sample.ts";
+import { placeSpire } from "./towers/spire.ts";
 
 export interface AndromedaState {
   ready: boolean;
@@ -65,6 +66,10 @@ export function publish(state: MatchState = ensureMatch()): void {
   const sameRoster =
     curr.roster.length === ids.length && curr.roster.every((id, index) => id === ids[index]);
   const roster = sameRoster ? curr.roster : ids;
+  const built = state.towers.map((tower) => tower.pad);
+  const sameBuilt =
+    curr.built.length === built.length && curr.built.every((pad, index) => pad === built[index]);
+  const builtPads = sameBuilt ? curr.built : built;
   if (
     Math.abs(curr.countdown - state.countdown) < 0.04 &&
     curr.lives === state.lives &&
@@ -74,7 +79,9 @@ export function publish(state: MatchState = ensureMatch()): void {
     curr.spawnTotal === state.plan.length &&
     curr.alive === state.enemies.length &&
     curr.leaked === state.leaked &&
-    sameRoster
+    curr.credits === state.credits &&
+    sameRoster &&
+    sameBuilt
   ) {
     return;
   }
@@ -88,7 +95,21 @@ export function publish(state: MatchState = ensureMatch()): void {
     alive: state.enemies.length,
     leaked: state.leaked,
     roster,
+    credits: state.credits,
+    built: builtPads,
   });
+}
+
+export function tryPlace(pad: number): boolean {
+  const state = ensureMatch();
+  const notice = placeSpire(state, pad);
+  publish(state);
+  useHud.setState({ notice });
+  return notice === "";
+}
+
+export function getEnemies(): readonly EnemyRuntime[] {
+  return ensureMatch().enemies;
 }
 
 /** Fixed-step the simulation. Delta is capped so a stalled tab cannot skip the wave. */

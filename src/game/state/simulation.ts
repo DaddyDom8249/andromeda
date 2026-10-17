@@ -3,6 +3,7 @@ import { getMap } from "../maps/registry.ts";
 import { buildMapPath } from "../paths/resolve.ts";
 import { planForWave } from "../spawning/waves.ts";
 import { RULES } from "../theme.ts";
+import { applySpires, SPIRE } from "../towers/spire.ts";
 import type { MatchState } from "./types.ts";
 
 export function createMatch(mapId: string = RULES.mapId): MatchState {
@@ -23,12 +24,16 @@ export function createMatch(mapId: string = RULES.mapId): MatchState {
     leakLog: [],
     path: built.path,
     routeIds: built.route.ids,
+    credits: SPIRE.startingCores,
+    towers: [],
+    nextTowerId: 1,
   };
 }
 
 /**
  * Advance the match by dt seconds. Movement is arc-length along the solved
  * path, so a crawler cannot leave the lane. A leak subtracts exactly one life.
+ * Spires damage enemies in range; a kill does not leak.
  */
 export function stepMatch(state: MatchState, dt: number): void {
   if (!(dt > 0) || state.phase === "resolved") return;
@@ -41,20 +46,29 @@ export function stepMatch(state: MatchState, dt: number): void {
     state.spawnTimer = 0;
   }
 
-  let leakedNow = 0;
   for (const enemy of state.enemies) {
     enemy.distance += enemy.speed * dt;
+    if (enemy.distance > state.path.totalLength) enemy.distance = state.path.totalLength;
+  }
+
+  applySpires(state, dt);
+
+  let leakedNow = 0;
+  const surviving = [];
+  for (const enemy of state.enemies) {
+    if (enemy.health <= 0) continue;
     if (enemy.distance >= state.path.totalLength) {
-      enemy.distance = state.path.totalLength;
       leakedNow += 1;
       state.leakLog.push(enemy.id);
+      continue;
     }
+    surviving.push(enemy);
   }
   if (leakedNow > 0) {
     state.lives -= leakedNow;
     state.leaked += leakedNow;
-    state.enemies = state.enemies.filter((enemy) => enemy.distance < state.path.totalLength);
   }
+  state.enemies = surviving;
 
   if (state.spawnIndex < state.plan.length) {
     state.spawnTimer -= dt;
