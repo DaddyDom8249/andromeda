@@ -1,0 +1,10 @@
+export { getEnemyType, listEnemyTypes } from "./enemies/registry.ts";
+export type { EnemyDefinition } from "./enemies/types.ts";
+export { getMap, listMaps } from "./maps/registry.ts";
+export type { MapDefinition } from "./maps/types.ts";
+export { findRoute } from "./paths/pathfinding.ts";
+export { buildMapPath } from "./paths/resolve.ts";
+export { getWave, listWaves, planForWave } from "./spawning/waves.ts";
+export { createMatch, stepMatch } from "./state/simulation.ts";
+export type { MatchPhase, MatchState } from "./state/types.ts";
+export { RULES } from "./theme.ts";

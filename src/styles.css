@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #120806;
+  --color-surface: #2a1812;
+  --color-fg: #f3e6d8;
+  --color-muted: #b9a193;
+  --color-primary: #ff4d1a;
+  --color-accent: #ffb020;
+  --color-border: #5c3a2c;
+  --font-sans: "Outfit", "Avenir Next", system-ui, sans-serif;
+  --font-display: "Cinzel", "Palatino Linotype", serif;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+.breach-dial {
+  width: 5.25rem;
+  height: 5.25rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle, var(--color-bg) 56%, transparent 58%),
+    conic-gradient(
+      var(--color-primary) calc(var(--breach, 1) * 360deg),
+      var(--color-border) 0
+    );
+}
+
+.breach-panel {
+  animation: ember-pulse 2.6s ease-in-out infinite;
+}
+
+.life-tick {
+  display: inline-block;
+  animation: life-tick 280ms ease-out;
+}
+
+.core-vignette {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 52%,
+    color-mix(in srgb, var(--color-bg) 62%, transparent) 100%
+  );
+}
+
+.andromeda-label {
+  pointer-events: none !important;
+  user-select: none;
+}
+
+@keyframes ember-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 32px color-mix(in srgb, var(--color-primary) 48%, transparent);
+  }
+}
+
+@keyframes life-tick {
+  from {
+    transform: scale(1.2);
+    color: var(--color-primary);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.heat-warning {
+  background: radial-gradient(
+    ellipse at center,
+    transparent 42%,
+    color-mix(in srgb, var(--color-primary) 42%, transparent) 100%
+  );
+  pointer-events: none;
+}
+
+.stick-base {
+  width: 7.25rem;
+  height: 7.25rem;
+  margin-bottom: env(safe-area-inset-bottom);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  display: grid;
+  place-items: center;
+  touch-action: none;
+}
+
+.stick-knob {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--color-primary) 55%, transparent);
+}
+
+.pickup-toast {
+  animation: pickup-toast 1.15s ease-out forwards;
+}
+
+.gather-btn {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+@keyframes pickup-toast {
+  0% {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breach-panel,
+  .life-tick,
+  .pickup-toast {
+    animation: none;
+  }
+}
