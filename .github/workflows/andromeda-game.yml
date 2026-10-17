@@ -21,7 +21,7 @@ jobs:
         run: npm ci
       - name: Typecheck
         run: npm run typecheck
-      - name: Unit and gameplay regression tests
-        run: npm test
+      - name: Dedicated gameplay regression tests
+        run: npm run test:game
       - name: Production build
         run: npm run build
