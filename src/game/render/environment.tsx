@@ -10,6 +10,8 @@ import {
   type Mesh,
 } from "three";
 import type { SceneryProp } from "../maps/types.ts";
+import { useHud } from "../hud-store.ts";
+import { tryCollectCrystal } from "../runtime.ts";
 import { THEME } from "../theme.ts";
 import { fallFragment, fallVertex, lavaFragment, lavaVertex } from "./shaders.ts";
 
@@ -152,7 +154,7 @@ function FloatRock({ prop }: { prop: SceneryProp }) {
   );
 }
 
-function Crystal({ prop }: { prop: SceneryProp }) {
+function Crystal({ prop, index }: { prop: SceneryProp; index: number }) {
   const ref = useRef<Mesh>(null);
   useFrame(({ clock }) => {
     const mesh = ref.current;
@@ -160,7 +162,21 @@ function Crystal({ prop }: { prop: SceneryProp }) {
     mesh.rotation.y = clock.elapsedTime * 0.25 + prop.phase;
   });
   return (
-    <group position={[prop.position[0], prop.position[1], prop.position[2]]}>
+    <group
+      position={[prop.position[0], prop.position[1], prop.position[2]]}
+      onClick={(event) => {
+        event.stopPropagation();
+        tryCollectCrystal(index);
+      }}
+    >
+      <mesh>
+        <sphereGeometry args={[1.6 * prop.scale, 12, 8]} />
+        <meshBasicMaterial color={THEME.accent} transparent opacity={0.08} depthWrite={false} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -prop.position[1] + 0.18, 0]}>
+        <ringGeometry args={[0.95, 1.2, 24]} />
+        <meshBasicMaterial color={THEME.accent} transparent opacity={0.85} depthWrite={false} side={DoubleSide} />
+      </mesh>
       <mesh ref={ref} scale={prop.scale}>
         <octahedronGeometry args={[0.85, 0]} />
         <meshBasicMaterial color={THEME.accent} />
@@ -228,11 +244,14 @@ function Isle({ prop }: { prop: SceneryProp }) {
 }
 
 export function Scenery({ props }: { props: SceneryProp[] }) {
+  const harvested = useHud((state) => state.crystalIds);
   return (
     <group>
       {props.map((prop, index) => {
         if (prop.kind === "rock") return <FloatRock key={index} prop={prop} />;
-        if (prop.kind === "crystal") return <Crystal key={index} prop={prop} />;
+        if (prop.kind === "crystal") {
+          return harvested.includes(index) ? null : <Crystal key={index} prop={prop} index={index} />;
+        }
         if (prop.kind === "geyser") return <Geyser key={index} prop={prop} />;
         if (prop.kind === "fall") return <LavaFall key={index} prop={prop} />;
         return <Isle key={index} prop={prop} />;
