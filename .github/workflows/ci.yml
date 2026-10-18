@@ -53,4 +53,6 @@ jobs:
           exit 1
       - name: Gameplay browser smoke (desktop and phone)
         run: node scripts/gameplay-browser-smoke.mjs
+      - name: World crystal mesh pointer and touch regression
+        run: node --experimental-strip-types scripts/game-crystal-pointer-smoke.mjs
 
