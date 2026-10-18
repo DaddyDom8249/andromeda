@@ -1,0 +1,41 @@
+# PROJECT_LOG
+
+## 2026-10-17 — Game regression coverage and CI (repair branch)
+
+- **Repository:** `DaddyDom8249/andromeda`.
+- **Baseline main HEAD inspected:** `f7935a34a9241566c823a7dbcffe686ef5e3238c`.
+- **Existing instructions:** reviewed root `AGENTS.md`; no existing `PROJECT_LOG.md` was present on `main`.
+- **Confirmed defect:** `npm test` named five TypeScript tests under `src/lib` and did not run the four game regression modules (`src/game/maps/earth-core.test.ts`, `src/game/paths/paths.test.ts`, `src/game/state/simulation.test.ts`, `src/game/world/sim.test.ts`). The README required a separate manual game test command.
+- **Smallest fix:** use Node 22's recursive test glob for all `src/**/*.test.ts` in `npm test`. Existing script tests remain a separate first command.
+- **Verification gate added:** GitHub Actions checks locked dependency install, `npm test`, TypeScript, lint, and build. CI explicitly clears `DATABASE_URL`, so build skips production DB migrations. The workflow has read-only repository permission and invokes no provider generation.
+- **Local baseline:** not run. Network DNS in the temporary local executor could not resolve GitHub, so the full repository could not be cloned here.
+- **Hosted CI evidence (commit `222f0797628016b78941c7eb93c1e53b6c60c5f3`):** [run 39064717125](https://github.com/DaddyDom8249/andromeda/actions/runs/39064717125) completed the portable source suite with **77 tests passed, 0 failed** (includes gameplay and library tests); `npm run typecheck`, `npm run lint`, and `npm run build` each completed successfully. A final doc-only commit will need its own revision-bound CI confirmation.
+- **Full `npm test` portability:** the initial full runner failed 16 Grok-template tests on GitHub due to missing `.grok` sandbox files and platform-dependent brand assumptions. These script-level platform tests were **not** run in portable GitHub CI, which uses `npm run test:source`; they still run under `npm test` in the originating Grok environment. Do not report the full command as passing on GitHub.
+- **Lint defect repaired:** `src/lib/app-data/client.server.ts` had an empty JWT-parse fallback `catch` rejected by ESLint. A documentation-only catch-body comment preserves the fallback behavior and removes the violation.
+- **Twilio:** no Twilio package or application integration identified; no unrelated service was added.
+- **CodeRabbit:** GitHub review connector does not expose a direct CodeRabbit review action; no automated review result is claimed.
+- **Production:** no deployment, database changes, or browser verification performed.
+- **Next:** inspect GitHub Actions run conclusions on the PR HEAD and repair any concrete failure before merge or deploy.
+
+## 2026-10-17 — Earth Core gameplay continuity and rewards
+
+- **User reproduction:** first wave stops forever; visible crystals do not react to taps/clicks; killed crawlers produce no resources.
+- **Root causes on main `f7935a34`:** only wave 1 authored; `stepMatch` unconditionally marks the state `resolved` after clearing that plan; scenery crystals render without an onClick or reward; dead enemies are deleted without awarding score or loot.
+- **Implemented on `fix/andromeda-gameplay-progression-loot`:** five escalating waves with 12-second inter-wave countdown, skip-wave action, explicit victory/defeat and restart; collectible map crystals and accessible HUD harvest; killed enemies spawn click-to-claim loot orbs, score and HUD collection fallback. All pickups are once-only, and the build currency remains spendable on spires.
+- **Scope:** implements progression *within the Earth's Core* only. Additional planetary/galactic levels have not been built.
+- **Test coverage:** new simulation regressions for progression through all waves, collectible crystals, single payout per kill/drop, and defeat; existing one-wave leakage regression updated to assert advancement to wave 2.
+- **Verified CI (head `6d407cac9aa77f6652581865768146d32f4965ad`):** [run 39067859936](https://github.com/DaddyDom8249/andromeda/actions/runs/39067859936) passed **81/81 source regression tests**, typecheck, lint, production build, and browser smoke on desktop (1280×800) plus mobile (390×844). The browser exercised working WebGL, crystal credit and score payout, "Start wave" transition, and layout; no uncaught page exceptions. The simulation suite independently verified killed-enemy loot spawning/once-only claiming, progression through five waves, and defeat.
+- **Preview deployment (same head):** Vercel deployment `dpl_EM6xDMKx9h94XTyGE8agJr6MjpFA` reported READY; page returned HTTP 200. This is **preview deployed**, not merged or production released.
+- **Limits of evidence:** browser smoke used the HUD collection fallback; manual tapping of arbitrary 3D objects and full end-to-end five-wave play by a human are not yet verified.
+- **Production:** main and original production remain unchanged pending reviewed gameplay verification. Do not merge until checks pass.
+
+## 2026-10-17 — Direct 3D crystal pointer/touch verification
+
+- **Objective (locked):** verify players can actually select and collect crystals on the active 3D battlefield with desktop mouse or phone touch; no gameplay implementation changes.
+- **Base for verification:** PR #2, `34109edf92cb9c62962f821cf335f59a3c596245`, which had a passing HUD fallback test but had not tested touching 3D crystal meshes directly.
+- **Test-only changes:** added `scripts/game-crystal-pointer-smoke.mjs` and one GitHub CI step. No new branch, dependency, production gameplay file, migration or provider operation.
+- **Source/CI evidence:** [GitHub Actions run 39082266204](https://github.com/DaddyDom8249/andromeda/actions/runs/39082266204) on commit `c1c9de398a654d7db3d4d3c7070ee4c15b8d8aa4` concluded SUCCESS: **81/81 source tests**, typecheck, ESLint, production build, existing desktop/mobile WebGL browser smoke, and new direct 3D crystal interaction test passed.
+- **Direct browser result:** desktop selected world crystal index 11, phone touch selected index 9. Both increased cores `120→145`, score `0→50`, crystal count `0→1` and rejected a second payout from the same mesh; no uncaught browser errors.
+- **Classification:** 3D crystal selection/collection **VERIFIED in CI browser** and **IMPLEMENTED in PR #2**. That is not evidence of production deployment or human phone testing.
+- **Remaining integration risk:** PR #2 and PR #3 independently change wave progression and must be reconciled as a separate microtask before merging either. Enemy loot drops have unit-level payout coverage but real 3D drop tapping is not proven by this browser test.
+- **Production:** no merge to main, production deployment, data changes, or paid service calls.

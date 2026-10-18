@@ -2,6 +2,7 @@ import type { PolyPath } from "../paths/sample.ts";
 import type { SpawnStep } from "../spawning/waves.ts";
 
 export type MatchPhase = "countdown" | "active" | "resolved";
+export type MatchResult = "victory" | "defeat" | null;
 
 export interface EnemyRuntime {
   id: number;
@@ -22,11 +23,20 @@ export interface TowerRuntime {
   cooldown: number;
 }
 
+export interface ResourceDrop {
+  id: number;
+  x: number;
+  y: number;
+  z: number;
+  cores: number;
+}
+
 export interface MatchState {
   mapId: string;
   lives: number;
   wave: number;
   phase: MatchPhase;
+  result: MatchResult;
   countdown: number;
   spawnTimer: number;
   spawnIndex: number;
@@ -35,9 +45,14 @@ export interface MatchState {
   nextId: number;
   leaked: number;
   leakLog: number[];
+  kills: number;
+  score: number;
   path: PolyPath;
   routeIds: string[];
   credits: number;
   towers: TowerRuntime[];
   nextTowerId: number;
+  collectedCrystals: number[];
+  drops: ResourceDrop[];
+  nextDropId: number;
 }

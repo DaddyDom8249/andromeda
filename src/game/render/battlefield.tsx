@@ -6,6 +6,7 @@ import { CameraRig } from "./camera-rig.tsx";
 import { Crawlers } from "./crawler.tsx";
 import { Cavern, CoreLights, Embers, Lava, Scenery } from "./environment.tsx";
 import { PathVisual } from "./path-visual.tsx";
+import { Loot } from "./loot.tsx";
 import { Portals } from "./portals.tsx";
 import { SimDriver } from "./sim-driver.tsx";
 import { Towers } from "./towers.tsx";
@@ -26,6 +27,7 @@ export function Battlefield() {
       <Portals path={path} />
       <Crawlers />
       <Towers />
+      <Loot />
     </>
   );
 }
