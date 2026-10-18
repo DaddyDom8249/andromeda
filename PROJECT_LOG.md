@@ -28,3 +28,14 @@
 - **Preview deployment (same head):** Vercel deployment `dpl_EM6xDMKx9h94XTyGE8agJr6MjpFA` reported READY; page returned HTTP 200. This is **preview deployed**, not merged or production released.
 - **Limits of evidence:** browser smoke used the HUD collection fallback; manual tapping of arbitrary 3D objects and full end-to-end five-wave play by a human are not yet verified.
 - **Production:** main and original production remain unchanged pending reviewed gameplay verification. Do not merge until checks pass.
+
+## 2026-10-17 — Direct 3D crystal pointer/touch verification
+
+- **Objective (locked):** verify players can actually select and collect crystals on the active 3D battlefield with desktop mouse or phone touch; no gameplay implementation changes.
+- **Base for verification:** PR #2, `34109edf92cb9c62962f821cf335f59a3c596245`, which had a passing HUD fallback test but had not tested touching 3D crystal meshes directly.
+- **Test-only changes:** added `scripts/game-crystal-pointer-smoke.mjs` and one GitHub CI step. No new branch, dependency, production gameplay file, migration or provider operation.
+- **Source/CI evidence:** [GitHub Actions run 39082266204](https://github.com/DaddyDom8249/andromeda/actions/runs/39082266204) on commit `c1c9de398a654d7db3d4d3c7070ee4c15b8d8aa4` concluded SUCCESS: **81/81 source tests**, typecheck, ESLint, production build, existing desktop/mobile WebGL browser smoke, and new direct 3D crystal interaction test passed.
+- **Direct browser result:** desktop selected world crystal index 11, phone touch selected index 9. Both increased cores `120→145`, score `0→50`, crystal count `0→1` and rejected a second payout from the same mesh; no uncaught browser errors.
+- **Classification:** 3D crystal selection/collection **VERIFIED in CI browser** and **IMPLEMENTED in PR #2**. That is not evidence of production deployment or human phone testing.
+- **Remaining integration risk:** PR #2 and PR #3 independently change wave progression and must be reconciled as a separate microtask before merging either. Enemy loot drops have unit-level payout coverage but real 3D drop tapping is not proven by this browser test.
+- **Production:** no merge to main, production deployment, data changes, or paid service calls.
